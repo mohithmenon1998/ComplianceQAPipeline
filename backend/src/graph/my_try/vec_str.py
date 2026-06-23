@@ -5,10 +5,8 @@ from langchain_chroma import Chroma
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.retrievers import BM25Retriever
-from langchain_classic.retrievers import EnsembleRetriever
+from langchain_classic.retrievers import EnsembleRetriever, ContextualCompressionRetriever
 from langchain_ollama import OllamaEmbeddings
-
-from langchain_classic.retrievers import ContextualCompressionRetriever
 from langchain_community.document_compressors.flashrank_rerank import FlashrankRerank
 
 
@@ -87,9 +85,9 @@ def get_reranked_retriever():
 
     documents = [
         Document(
-            page_content=text
+            page_content=doc["documents"]
         )
-        for text in all_docs["documents"]
+        for doc in all_docs
     ]
 
     bm25_retriever = (
@@ -97,7 +95,7 @@ def get_reranked_retriever():
             documents
         )
     )
-
+    
     bm25_retriever.k =  10
 
     hybrid_retriever = (
