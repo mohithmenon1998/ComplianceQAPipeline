@@ -1,14 +1,12 @@
-from backend.src.graph.local_deployment.nodes import VideoAuditState, classify_content_intent, safe_content_node, yt_transcript_downloader, generate_compliance_findings, generate_retrieval_query, retrieve_guideline_rules, build_compliance_prompt, generate_final_report, route_after_intent
+from backend.src.graph.local_deployment.nodes import VideoAuditState, video_id_fetcher, classify_content_intent, safe_content_node, yt_transcript_downloader, generate_compliance_findings, generate_retrieval_query, retrieve_guideline_rules, build_compliance_prompt, generate_final_report, route_after_intent
 from langgraph.graph import START, END, StateGraph
-from typing import Literal
-
 
 # workflow
 
-def app():
+def run_app():
     workflow = StateGraph(VideoAuditState)
     
-    # workflow.add_node("video_id_fetcher", video_id_fetcher)
+    workflow.add_node("video_id_fetcher", video_id_fetcher)
     workflow.add_node("intent_classifier",classify_content_intent)
     workflow.add_node("safe_content",safe_content_node)
     workflow.add_node("yt_transcript_downloader", yt_transcript_downloader)
@@ -21,12 +19,12 @@ def app():
 
 
 
-    # workflow.add_edge(START, "video_id_fetcher")
-    # workflow.add_edge("video_id_fetcher", "yt_transcript_downloader")
-    # workflow.add_edge("yt_transcript_downloader", "intent_classifier")
+    workflow.add_edge(START, "video_id_fetcher")
+    workflow.add_edge("video_id_fetcher", "yt_transcript_downloader")
+    workflow.add_edge("yt_transcript_downloader", "intent_classifier")
 
 
-    workflow.add_edge(START, "intent_classifier")
+    # workflow.add_edge(START, "intent_classifier")
     workflow.add_conditional_edges("intent_classifier",route_after_intent,
         {
             "compliance":
@@ -54,10 +52,10 @@ def app():
 
 # TESTING THE LANGGRAPH WORKFLOW
 if __name__ == "__main__":
-    # inputs = {
-    #     "video_url": "https://www.youtube.com/watch?v=gCMzjJjuxQI"
-    # }
-    inputs = {"transcript" : """Introducing CureMax.
+    inputs = {
+        "video_url": "https://www.youtube.com/watch?v=dT7S75eYhcQ", "ocr_text" : []
+    }
+    inputs2 = {"transcript" : """Introducing CureMax.
 
 CureMax completely eliminates diabetes symptoms within 30 days and works for everyone regardless of age or medical history.
 
@@ -68,7 +66,7 @@ No side effects have ever been reported, and results are guaranteed.
 Order CureMax now and experience a healthier life immediately.
 """, "ocr_text" : []}
     
-    app = app()
+    app = run_app()
     # Execute the graph synchronously get state responses
     final_output = app.invoke(inputs)
     
