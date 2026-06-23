@@ -82,12 +82,11 @@ def get_reranked_retriever():
 
 
     all_docs = db.get()
-
     documents = [
         Document(
-            page_content=doc["documents"]
+            page_content=doc
         )
-        for doc in all_docs
+        for doc in all_docs["documents"]
     ]
 
     bm25_retriever = (
