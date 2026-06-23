@@ -1,4 +1,4 @@
-from backend.src.graph.my_try.nodes2 import VideoAuditState, classify_content_intent, safe_content_node, yt_transcript_downloader, generate_compliance_findings, generate_retrieval_query, retrieve_guideline_rules, build_compliance_prompt, generate_final_report, route_after_intent
+from backend.src.graph.local_deployment.nodes import VideoAuditState, classify_content_intent, safe_content_node, yt_transcript_downloader, generate_compliance_findings, generate_retrieval_query, retrieve_guideline_rules, build_compliance_prompt, generate_final_report, route_after_intent
 from langgraph.graph import START, END, StateGraph
 from typing import Literal
 
