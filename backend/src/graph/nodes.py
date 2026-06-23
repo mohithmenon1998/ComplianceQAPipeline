@@ -5,13 +5,13 @@ import re
 from typing import Dict, Any, List
 
 from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings
-from langchain_community.vectorstores import azuresearch
+from langchain_community.vectorstores import AzureSearch
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage
 
 
 # import state
-from backend.src.graph.state import VideoAuditState, ComplianceIsuue
+from backend.src.graph.state import VideoAuditState, ComplianceReport
 
 # import VideoIndexerService
 from backend.src.services.video_indexer import VideoIndexerService
@@ -87,5 +87,49 @@ def audio_content_node(state: VideoAuditState) -> Dict[str, any]:
         }
     
     llm = AzureChatOpenAI(
-        azure_deployment= os.getenv("A")
+        azure_deployment = os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT"),
+        azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT"),
+        api_version = os.getenv("AZURE_OPENAI_API_VERSION"),
+        temperature = 0.0,
+        api_key= os.getenv("AZURE_OPENAI_API_KEY")
     )
+    
+    embeddings = AzureOpenAIEmbeddings(
+        api_key= os.getenv("AZURE_OPENAI_API_KEY"),
+        azure_deployment = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT"),
+        api_version = os.getenv("AZURE_OPENAI_API_VERSION")
+    )
+    
+    vector_store = AzureSearch(
+        azure_search_endpoint = os.getenv("AZURE_SEARCH_ENDPOINT"),
+        azure_search_key = os.getenv("AZURE_SEARCH_API_KEY"),
+        index_name = os.getenv("AZURE_SEARCH_INDEX_NAME"),
+        embedding_function = embeddings.embed_query
+    )
+    
+    # RAG Retrieval
+    llm.with_structured_output(ComplianceReport)
+
+
+
+
+
+
+
+def build_search_query(state):
+
+    transcript = state["transcript"] or ""
+
+    ocr = " ".join(state["ocr_text"])
+
+    combined_content = f"""
+    Transcript:
+    {transcript}
+
+    OCR:
+    {ocr}
+    """
+
+    return {
+        "search_text": combined_content[:3000]
+    }
